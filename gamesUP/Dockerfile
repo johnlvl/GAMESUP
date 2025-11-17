@@ -1,19 +1,19 @@
 # Multi-stage build for Spring Boot (GamesUP)
-FROM eclipse-temurin:21-jdk AS build
+# Use official Maven image to avoid wrapper checksum issues inside containers
+FROM maven:3.9.9-eclipse-temurin-21 AS build
 WORKDIR /workspace
 
-# Copy Maven wrapper and pom
-COPY mvnw* pom.xml ./
-COPY .mvn .mvn
+# Copy pom for dependency resolution and cache layer
+COPY pom.xml ./
 
-# Download dependencies (go-offline)
-RUN chmod +x mvnw && ./mvnw -q -B dependency:go-offline
+# Pre-fetch dependencies to leverage Docker layer caching
+RUN mvn -q -B -e -DskipTests dependency:go-offline
 
-# Copy source
-COPY src src
+# Copy source code
+COPY src ./src
 
 # Build application
-RUN ./mvnw -q -B package -DskipTests
+RUN mvn -q -B -DskipTests package
 
 # Runtime image
 FROM eclipse-temurin:21-jre AS runtime
