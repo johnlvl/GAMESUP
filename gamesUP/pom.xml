@@ -28,6 +28,7 @@
 	</scm>
 	<properties>
 		<java.version>21</java.version>
+		<jacoco.skip>true</jacoco.skip>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -84,6 +85,38 @@
 						</exclude>
 					</excludes>
 				</configuration>
+			</plugin>
+			<!-- JaCoCo code coverage plugin (Jalon 0) - skipped locally (Java 25) unless -Djacoco.skip=false -->
+			<plugin>
+				<groupId>org.jacoco</groupId>
+				<artifactId>jacoco-maven-plugin</artifactId>
+				<version>0.8.12</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>prepare-agent</goal>
+						</goals>
+						<configuration>
+							<skip>${jacoco.skip}</skip>
+							<!-- Exclude JDK/internal classes to mitigate instrumentation errors on newer JDKs -->
+							<excludes>
+								<exclude>java/*</exclude>
+								<exclude>jdk/*</exclude>
+								<exclude>sun/*</exclude>
+							</excludes>
+						</configuration>
+					</execution>
+					<execution>
+						<id>report</id>
+						<phase>verify</phase>
+						<goals>
+							<goal>report</goal>
+						</goals>
+						<configuration>
+							<skip>${jacoco.skip}</skip>
+						</configuration>
+					</execution>
+				</executions>
 			</plugin>
 		</plugins>
 	</build>
