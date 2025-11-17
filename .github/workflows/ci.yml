@@ -1,0 +1,120 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [ main, develop ]
+  push:
+    branches: [ main ]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  java-backend:
+    name: Java Spring (build & tests)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: gamesUP
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+          cache: 'maven'
+
+      - name: Maven Build & Test
+        run: ./mvnw -B clean verify
+
+      - name: Archive test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: java-test-reports
+          path: |
+            gamesUP/target/surefire-reports/**
+            gamesUP/target/failsafe-reports/**
+
+      - name: Archive coverage (JaCoCo)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: jacoco-report
+          path: gamesUP/target/site/jacoco
+          if-no-files-found: ignore
+
+  python-api:
+    name: Python FastAPI (lint & build)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: CodeApiPython
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install black flake8
+
+      - name: Lint (flake8)
+        run: flake8 . || true # non bloquant tant que code peu fourni
+
+      - name: Format check (black)
+        run: black --check . || true
+
+      - name: Placeholder tests
+        run: |
+          echo "No tests yet" > test-output.txt
+        
+      - name: Archive Python artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: python-artifacts
+          path: CodeApiPython/test-output.txt
+
+  docker-build:
+    name: Docker build (multi-service)
+    runs-on: ubuntu-latest
+    needs: [java-backend, python-api]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Spring image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./gamesUP
+          file: ./gamesUP/Dockerfile
+          push: false
+          tags: gamesup-backend:pr
+
+      - name: Build Python API image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./CodeApiPython
+          file: ./CodeApiPython/Dockerfile
+          push: false
+          tags: gamesup-reco-api:pr
+
+      - name: Compose config validation
+        run: docker compose -f docker-compose.yml config
+
+    # Optional future step: push images on main with version tag
+

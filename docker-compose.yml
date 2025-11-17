@@ -1,0 +1,51 @@
+version: "3.9"
+services:
+  db:
+    image: mysql:8.4
+    container_name: gamesup-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: GamesUP
+      MYSQL_USER: gamesup
+      MYSQL_PASSWORD: gamesup
+    ports:
+      - "3306:3306"
+    command: ["--default-authentication-plugin=mysql_native_password"]
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./gamesUP
+      dockerfile: Dockerfile
+    container_name: gamesup-backend
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/GamesUP
+      SPRING_DATASOURCE_USERNAME: gamesup
+      SPRING_DATASOURCE_PASSWORD: gamesup
+      SPRING_PROFILES_ACTIVE: dev
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+
+  reco:
+    build:
+      context: ./CodeApiPython
+      dockerfile: Dockerfile
+    container_name: gamesup-reco-api
+    environment:
+      PORT: 8000
+    ports:
+      - "8000:8000"
+    depends_on:
+      - backend
+
+networks:
+  default:
+    name: gamesup-net
