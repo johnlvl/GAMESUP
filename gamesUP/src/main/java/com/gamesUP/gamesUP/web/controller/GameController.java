@@ -2,6 +2,7 @@ package com.gamesUP.gamesUP.web.controller;
 
 import com.gamesUP.gamesUP.service.GameService;
 import com.gamesUP.gamesUP.web.dto.GameDTO;
+import com.gamesUP.gamesUP.web.dto.GameSearchResponseDTO;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -29,7 +30,7 @@ public class GameController {
     }
 
     @GetMapping("/search")
-    public Page<GameDTO> search(@RequestParam(required = false) String q,
+    public GameSearchResponseDTO search(@RequestParam(required = false) String q,
                                 @RequestParam(required = false) Long categoryId,
                                 @RequestParam(required = false) Long publisherId,
                                 @RequestParam(required = false) Long authorId,
@@ -37,7 +38,8 @@ public class GameController {
                                 @RequestParam(required = false) BigDecimal priceMax,
                                 @RequestParam(required = false) Boolean inStock,
                                 @PageableDefault Pageable pageable) {
-        return gameService.searchAdvanced(q, categoryId, publisherId, authorId, priceMin, priceMax, inStock, pageable);
+        Page<GameDTO> pageResult = gameService.searchAdvanced(q, categoryId, publisherId, authorId, priceMin, priceMax, inStock, pageable);
+        return new GameSearchResponseDTO(pageResult.getContent(), pageResult.getTotalElements(), pageResult.getNumber(), pageResult.getSize());
     }
 
     @GetMapping("/{id}")
