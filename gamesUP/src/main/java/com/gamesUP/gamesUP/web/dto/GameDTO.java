@@ -2,6 +2,7 @@ package com.gamesUP.gamesUP.web.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import java.math.BigDecimal;
 
 public class GameDTO {
     public Integer id;
@@ -21,4 +22,5 @@ public class GameDTO {
     public Long authorId;
 
     public int numEdition;
+    public BigDecimal price;
 }

@@ -76,4 +76,21 @@ class GameControllerTest {
         mockMvc.perform(get("/api/games/999").accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound());
     }
+    @Test
+    void search_withFilters_returnsPagedGames() throws Exception {
+        GameDTO g = new GameDTO();
+        g.id = 2; g.nom = "Terraforming Mars"; g.numEdition = 1;
+        Page<GameDTO> page = new PageImpl<>(List.of(g), PageRequest.of(0, 10), 1);
+        Mockito.when(gameService.searchAdvanced(any(), any(), any(), any(), any(), any(), any(), any())).thenReturn(page);
+
+        mockMvc.perform(get("/api/games/search")
+                        .param("q", "terra")
+                        .param("priceMin", "20")
+                        .param("priceMax", "80")
+                        .param("inStock", "true")
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content", hasSize(1)))
+                .andExpect(jsonPath("$.content[0].nom", containsString("Terraforming")));
+    }
 }

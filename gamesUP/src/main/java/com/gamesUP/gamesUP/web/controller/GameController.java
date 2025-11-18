@@ -5,6 +5,9 @@ import com.gamesUP.gamesUP.web.dto.GameDTO;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
+
+import java.math.BigDecimal;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -23,6 +26,18 @@ public class GameController {
     @GetMapping
     public Page<GameDTO> list(Pageable pageable) {
         return gameService.list(pageable);
+    }
+
+    @GetMapping("/search")
+    public Page<GameDTO> search(@RequestParam(required = false) String q,
+                                @RequestParam(required = false) Long categoryId,
+                                @RequestParam(required = false) Long publisherId,
+                                @RequestParam(required = false) Long authorId,
+                                @RequestParam(required = false) BigDecimal priceMin,
+                                @RequestParam(required = false) BigDecimal priceMax,
+                                @RequestParam(required = false) Boolean inStock,
+                                @PageableDefault Pageable pageable) {
+        return gameService.searchAdvanced(q, categoryId, publisherId, authorId, priceMin, priceMax, inStock, pageable);
     }
 
     @GetMapping("/{id}")
