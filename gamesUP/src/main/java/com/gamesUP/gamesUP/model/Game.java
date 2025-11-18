@@ -1,6 +1,7 @@
 package com.gamesUP.gamesUP.model;
 
 import jakarta.persistence.*;
+import java.math.BigDecimal;
 
 @Entity
 @Table(name = "games")
@@ -27,6 +28,7 @@ public class Game {
     public Author author; // relational author
 
     public int numEdition;
+    public BigDecimal price;
 
     public Game() {}
 }

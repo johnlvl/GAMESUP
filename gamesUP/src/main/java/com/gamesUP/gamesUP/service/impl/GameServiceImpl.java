@@ -9,10 +9,12 @@ import com.gamesUP.gamesUP.repository.CategoryRepository;
 import com.gamesUP.gamesUP.repository.GameRepository;
 import com.gamesUP.gamesUP.repository.PublisherRepository;
 import com.gamesUP.gamesUP.service.GameService;
+import com.gamesUP.gamesUP.repository.spec.GameSpecifications;
 import com.gamesUP.gamesUP.web.dto.GameDTO;
 import com.gamesUP.gamesUP.web.mapper.GameMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -65,6 +67,27 @@ public class GameServiceImpl implements GameService {
         String term = q == null ? "" : q;
         return gameRepository.findByNomContainingIgnoreCase(term, pageable)
                 .map(mapper::toDto);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<GameDTO> searchAdvanced(String q,
+                                        Long categoryId,
+                                        Long publisherId,
+                                        Long authorId,
+                                        java.math.BigDecimal priceMin,
+                                        java.math.BigDecimal priceMax,
+                                        Boolean inStock,
+                                        Pageable pageable) {
+        Specification<Game> spec = GameSpecifications.nomContains(q)
+            .and(GameSpecifications.categoryIdEquals(categoryId))
+            .and(GameSpecifications.publisherIdEquals(publisherId))
+            .and(GameSpecifications.authorIdEquals(authorId))
+            .and(GameSpecifications.priceGreaterOrEqual(priceMin))
+            .and(GameSpecifications.priceLessOrEqual(priceMax))
+            .and(GameSpecifications.inStock(inStock));
+
+        return gameRepository.findAll(spec, pageable).map(mapper::toDto);
     }
 
     @Override

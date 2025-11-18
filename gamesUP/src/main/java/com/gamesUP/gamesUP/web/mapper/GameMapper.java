@@ -14,6 +14,7 @@ public class GameMapper {
         d.auteur = e.auteur;
         d.genre = e.genre;
         d.numEdition = e.numEdition;
+        d.price = e.price;
         d.categoryId = e.category != null ? e.category.getId() : null;
         d.publisherId = e.publisher != null ? e.publisher.getId() : null;
         d.authorId = e.author != null ? e.author.id : null;
@@ -28,6 +29,7 @@ public class GameMapper {
         e.auteur = d.auteur;
         e.genre = d.genre;
         e.numEdition = d.numEdition;
+        e.price = d.price;
         // Relations (category/publisher/author) are set in service using IDs
         return e;
     }
