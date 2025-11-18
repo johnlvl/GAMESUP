@@ -3,6 +3,7 @@ package com.gamesUP.gamesUP.web.controller;
 import com.gamesUP.gamesUP.service.AuthorService;
 import com.gamesUP.gamesUP.web.dto.AuthorDTO;
 import com.gamesUP.gamesUP.web.error.GlobalExceptionHandler;
+import com.gamesUP.gamesUP.config.SecurityConfig;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,10 +22,11 @@ import java.util.List;
 import static org.hamcrest.Matchers.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.httpBasic;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(controllers = AuthorController.class)
-@Import(GlobalExceptionHandler.class)
+@Import({GlobalExceptionHandler.class, SecurityConfig.class})
 class AuthorControllerTest {
     @Autowired
     private MockMvc mockMvc;
@@ -57,7 +59,7 @@ class AuthorControllerTest {
         Mockito.when(service.create(any())).thenReturn(created);
 
         String body = "{\n  \"name\": \"Reiner Knizia\"\n}";
-        mockMvc.perform(post("/api/authors").contentType(MediaType.APPLICATION_JSON).content(body))
+        mockMvc.perform(post("/api/authors").with(httpBasic("admin","admin")).contentType(MediaType.APPLICATION_JSON).content(body))
                 .andExpect(status().isCreated())
                 .andExpect(header().string("Location", containsString("/api/authors/7")))
                 .andExpect(jsonPath("$.id", is(7)));
@@ -73,14 +75,14 @@ class AuthorControllerTest {
     void update_ok() throws Exception {
         AuthorDTO updated = new AuthorDTO(); updated.id = 3L; updated.name = "Uwe Rosenberg";
         Mockito.when(service.update(eq(3L), any())).thenReturn(updated);
-        mockMvc.perform(put("/api/authors/3").contentType(MediaType.APPLICATION_JSON).content("{\n \"name\": \"Uwe Rosenberg\"\n}"))
+        mockMvc.perform(put("/api/authors/3").with(httpBasic("admin","admin")).contentType(MediaType.APPLICATION_JSON).content("{\n \"name\": \"Uwe Rosenberg\"\n}"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.name", is("Uwe Rosenberg")));
     }
 
     @Test
     void delete_noContent() throws Exception {
-        mockMvc.perform(delete("/api/authors/3")).andExpect(status().isNoContent());
+        mockMvc.perform(delete("/api/authors/3").with(httpBasic("admin","admin"))).andExpect(status().isNoContent());
         Mockito.verify(service).delete(3L);
     }
 }

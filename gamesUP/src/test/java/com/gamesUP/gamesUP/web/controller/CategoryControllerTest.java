@@ -3,6 +3,7 @@ package com.gamesUP.gamesUP.web.controller;
 import com.gamesUP.gamesUP.service.CategoryService;
 import com.gamesUP.gamesUP.web.dto.CategoryDTO;
 import com.gamesUP.gamesUP.web.error.GlobalExceptionHandler;
+import com.gamesUP.gamesUP.config.SecurityConfig;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,10 +22,11 @@ import java.util.List;
 import static org.hamcrest.Matchers.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.httpBasic;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(controllers = CategoryController.class)
-@Import(GlobalExceptionHandler.class)
+@Import({GlobalExceptionHandler.class, SecurityConfig.class})
 class CategoryControllerTest {
     @Autowired
     private MockMvc mockMvc;
@@ -57,7 +59,7 @@ class CategoryControllerTest {
         Mockito.when(service.create(any())).thenReturn(created);
 
         String body = "{\n  \"type\": \"Strategy\"\n}";
-        mockMvc.perform(post("/api/categories").contentType(MediaType.APPLICATION_JSON).content(body))
+        mockMvc.perform(post("/api/categories").with(httpBasic("admin","admin")).contentType(MediaType.APPLICATION_JSON).content(body))
                 .andExpect(status().isCreated())
                 .andExpect(header().string("Location", containsString("/api/categories/10")))
                 .andExpect(jsonPath("$.id", is(10)));
@@ -73,14 +75,14 @@ class CategoryControllerTest {
     void update_ok() throws Exception {
         CategoryDTO updated = new CategoryDTO(); updated.id = 1L; updated.type = "Euro";
         Mockito.when(service.update(eq(1L), any())).thenReturn(updated);
-        mockMvc.perform(put("/api/categories/1").contentType(MediaType.APPLICATION_JSON).content("{\n \"type\": \"Euro\"\n}"))
+        mockMvc.perform(put("/api/categories/1").with(httpBasic("admin","admin")).contentType(MediaType.APPLICATION_JSON).content("{\n \"type\": \"Euro\"\n}"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.type", is("Euro")));
     }
 
     @Test
     void delete_noContent() throws Exception {
-        mockMvc.perform(delete("/api/categories/1")).andExpect(status().isNoContent());
+        mockMvc.perform(delete("/api/categories/1").with(httpBasic("admin","admin"))).andExpect(status().isNoContent());
         Mockito.verify(service).delete(1L);
     }
 }

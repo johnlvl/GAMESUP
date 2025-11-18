@@ -3,6 +3,7 @@ package com.gamesUP.gamesUP.web.controller;
 import com.gamesUP.gamesUP.service.PublisherService;
 import com.gamesUP.gamesUP.web.dto.PublisherDTO;
 import com.gamesUP.gamesUP.web.error.GlobalExceptionHandler;
+import com.gamesUP.gamesUP.config.SecurityConfig;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,10 +22,11 @@ import java.util.List;
 import static org.hamcrest.Matchers.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.httpBasic;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(controllers = PublisherController.class)
-@Import(GlobalExceptionHandler.class)
+@Import({GlobalExceptionHandler.class, SecurityConfig.class})
 class PublisherControllerTest {
     @Autowired
     private MockMvc mockMvc;
@@ -57,7 +59,7 @@ class PublisherControllerTest {
         Mockito.when(service.create(any())).thenReturn(created);
 
         String body = "{\n  \"name\": \"Repos Prod\"\n}";
-        mockMvc.perform(post("/api/publishers").contentType(MediaType.APPLICATION_JSON).content(body))
+        mockMvc.perform(post("/api/publishers").with(httpBasic("admin","admin")).contentType(MediaType.APPLICATION_JSON).content(body))
                 .andExpect(status().isCreated())
                 .andExpect(header().string("Location", containsString("/api/publishers/5")))
                 .andExpect(jsonPath("$.id", is(5)));
@@ -73,14 +75,14 @@ class PublisherControllerTest {
     void update_ok() throws Exception {
         PublisherDTO updated = new PublisherDTO(); updated.id = 2L; updated.name = "Matagot";
         Mockito.when(service.update(eq(2L), any())).thenReturn(updated);
-        mockMvc.perform(put("/api/publishers/2").contentType(MediaType.APPLICATION_JSON).content("{\n \"name\": \"Matagot\"\n}"))
+        mockMvc.perform(put("/api/publishers/2").with(httpBasic("admin","admin")).contentType(MediaType.APPLICATION_JSON).content("{\n \"name\": \"Matagot\"\n}"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.name", is("Matagot")));
     }
 
     @Test
     void delete_noContent() throws Exception {
-        mockMvc.perform(delete("/api/publishers/2")).andExpect(status().isNoContent());
+        mockMvc.perform(delete("/api/publishers/2").with(httpBasic("admin","admin"))).andExpect(status().isNoContent());
         Mockito.verify(service).delete(2L);
     }
 }
