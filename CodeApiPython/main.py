@@ -1,8 +1,14 @@
 from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
 from typing import List
 from recommendation import generate_recommendations
-from models import UserData
+from models import (
+    RecommendationsRequest,
+    RecommendationsResponse,
+    RecommendationItem,
+    EventsBatchRequest,
+    EventsBatchResponse,
+    HealthResponse,
+)
 
 app = FastAPI()
 
@@ -11,11 +17,29 @@ app = FastAPI()
 async def root():
     return {"message": "API de recommandation en ligne"}
 
-# Endpoint pour envoyer les données d'utilisateur et récupérer des recommandations
-@app.post("/recommendations/")
-async def get_recommendations(data: UserData):
+@app.get("/health", response_model=HealthResponse)
+async def health():
+    return HealthResponse(status="ok", model_loaded=True)
+
+
+# Endpoint pour récupérer des recommandations
+@app.post("/recommendations", response_model=RecommendationsResponse)
+async def recommendations(req: RecommendationsRequest):
     try:
-        recommendations = generate_recommendations(data)
-        return {"recommendations": recommendations}
+        items: List[RecommendationItem] = generate_recommendations(req)
+        return RecommendationsResponse(
+            user_id=req.user_id,
+            recommendations=items,
+            model_version="v1",
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/events/batch", response_model=EventsBatchResponse)
+async def events_batch(body: EventsBatchRequest):
+    try:
+        accepted = len(body.events)
+        return EventsBatchResponse(accepted=accepted)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
