@@ -3,6 +3,7 @@ package com.gamesUP.gamesUP.web.controller;
 import com.gamesUP.gamesUP.service.GameService;
 import com.gamesUP.gamesUP.web.dto.GameDTO;
 import com.gamesUP.gamesUP.web.error.GlobalExceptionHandler;
+import com.gamesUP.gamesUP.config.SecurityConfig;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,10 +22,11 @@ import java.util.List;
 import static org.hamcrest.Matchers.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.httpBasic;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(controllers = GameController.class)
-@Import(GlobalExceptionHandler.class)
+@Import({GlobalExceptionHandler.class, SecurityConfig.class})
 class GameControllerTest {
 
     @Autowired
@@ -62,7 +64,7 @@ class GameControllerTest {
         Mockito.when(gameService.create(any())).thenReturn(created);
 
         String body = "{\n  \"nom\": \"Azul\", \"numEdition\": 1\n}";
-        mockMvc.perform(post("/api/games").contentType(MediaType.APPLICATION_JSON).content(body))
+        mockMvc.perform(post("/api/games").with(httpBasic("admin","admin")).contentType(MediaType.APPLICATION_JSON).content(body))
                 .andExpect(status().isCreated())
                 .andExpect(header().string("Location", containsString("/api/games/10")))
                 .andExpect(jsonPath("$.id", is(10)))
