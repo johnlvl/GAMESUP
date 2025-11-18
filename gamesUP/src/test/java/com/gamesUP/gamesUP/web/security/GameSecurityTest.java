@@ -54,4 +54,14 @@ class GameSecurityTest {
                         .content(body))
                 .andExpect(status().isCreated());
     }
+
+    @Test
+    void post_withClientAuth_returns403() throws Exception {
+        String body = "{\n  \"nom\": \"Test\", \"numEdition\": 1\n}";
+        mockMvc.perform(post("/api/games")
+                        .with(SecurityMockMvcRequestPostProcessors.httpBasic("client","client"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isForbidden());
+    }
 }
