@@ -62,4 +62,25 @@ class CategoryControllerTest {
                 .andExpect(header().string("Location", containsString("/api/categories/10")))
                 .andExpect(jsonPath("$.id", is(10)));
     }
+
+    @Test
+    void get_notFound_404() throws Exception {
+        Mockito.when(service.get(anyLong())).thenThrow(new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.NOT_FOUND));
+        mockMvc.perform(get("/api/categories/99")).andExpect(status().isNotFound());
+    }
+
+    @Test
+    void update_ok() throws Exception {
+        CategoryDTO updated = new CategoryDTO(); updated.id = 1L; updated.type = "Euro";
+        Mockito.when(service.update(eq(1L), any())).thenReturn(updated);
+        mockMvc.perform(put("/api/categories/1").contentType(MediaType.APPLICATION_JSON).content("{\n \"type\": \"Euro\"\n}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.type", is("Euro")));
+    }
+
+    @Test
+    void delete_noContent() throws Exception {
+        mockMvc.perform(delete("/api/categories/1")).andExpect(status().isNoContent());
+        Mockito.verify(service).delete(1L);
+    }
 }

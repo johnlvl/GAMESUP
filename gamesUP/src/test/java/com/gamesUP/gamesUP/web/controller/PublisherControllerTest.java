@@ -62,4 +62,25 @@ class PublisherControllerTest {
                 .andExpect(header().string("Location", containsString("/api/publishers/5")))
                 .andExpect(jsonPath("$.id", is(5)));
     }
+
+    @Test
+    void get_notFound_404() throws Exception {
+        Mockito.when(service.get(anyLong())).thenThrow(new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.NOT_FOUND));
+        mockMvc.perform(get("/api/publishers/42")).andExpect(status().isNotFound());
+    }
+
+    @Test
+    void update_ok() throws Exception {
+        PublisherDTO updated = new PublisherDTO(); updated.id = 2L; updated.name = "Matagot";
+        Mockito.when(service.update(eq(2L), any())).thenReturn(updated);
+        mockMvc.perform(put("/api/publishers/2").contentType(MediaType.APPLICATION_JSON).content("{\n \"name\": \"Matagot\"\n}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.name", is("Matagot")));
+    }
+
+    @Test
+    void delete_noContent() throws Exception {
+        mockMvc.perform(delete("/api/publishers/2")).andExpect(status().isNoContent());
+        Mockito.verify(service).delete(2L);
+    }
 }

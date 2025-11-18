@@ -30,4 +30,20 @@ public class AuthorController {
                 uriBuilder.path("/api/authors/{id}").buildAndExpand(created.id).toUri()
         ).body(created);
     }
+
+    @GetMapping("/{id}")
+    public AuthorDTO get(@PathVariable Long id) {
+        return service.get(id);
+    }
+
+    @PutMapping("/{id}")
+    public AuthorDTO update(@PathVariable Long id, @Valid @RequestBody AuthorDTO dto) {
+        return service.update(id, dto);
+    }
+
+    @DeleteMapping("/{id}")
+    @ResponseStatus(org.springframework.http.HttpStatus.NO_CONTENT)
+    public void delete(@PathVariable Long id) {
+        service.delete(id);
+    }
 }

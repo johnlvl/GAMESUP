@@ -30,4 +30,20 @@ public class CategoryController {
                 uriBuilder.path("/api/categories/{id}").buildAndExpand(created.id).toUri()
         ).body(created);
     }
+
+    @GetMapping("/{id}")
+    public CategoryDTO get(@PathVariable Long id) {
+        return service.get(id);
+    }
+
+    @PutMapping("/{id}")
+    public CategoryDTO update(@PathVariable Long id, @Valid @RequestBody CategoryDTO dto) {
+        return service.update(id, dto);
+    }
+
+    @DeleteMapping("/{id}")
+    @ResponseStatus(org.springframework.http.HttpStatus.NO_CONTENT)
+    public void delete(@PathVariable Long id) {
+        service.delete(id);
+    }
 }

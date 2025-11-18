@@ -62,4 +62,25 @@ class AuthorControllerTest {
                 .andExpect(header().string("Location", containsString("/api/authors/7")))
                 .andExpect(jsonPath("$.id", is(7)));
     }
+
+    @Test
+    void get_notFound_404() throws Exception {
+        Mockito.when(service.get(anyLong())).thenThrow(new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.NOT_FOUND));
+        mockMvc.perform(get("/api/authors/404")).andExpect(status().isNotFound());
+    }
+
+    @Test
+    void update_ok() throws Exception {
+        AuthorDTO updated = new AuthorDTO(); updated.id = 3L; updated.name = "Uwe Rosenberg";
+        Mockito.when(service.update(eq(3L), any())).thenReturn(updated);
+        mockMvc.perform(put("/api/authors/3").contentType(MediaType.APPLICATION_JSON).content("{\n \"name\": \"Uwe Rosenberg\"\n}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.name", is("Uwe Rosenberg")));
+    }
+
+    @Test
+    void delete_noContent() throws Exception {
+        mockMvc.perform(delete("/api/authors/3")).andExpect(status().isNoContent());
+        Mockito.verify(service).delete(3L);
+    }
 }

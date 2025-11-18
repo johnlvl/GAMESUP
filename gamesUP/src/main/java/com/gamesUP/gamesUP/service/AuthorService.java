@@ -7,4 +7,7 @@ import org.springframework.data.domain.Pageable;
 public interface AuthorService {
     AuthorDTO create(AuthorDTO dto);
     Page<AuthorDTO> list(Pageable pageable);
+    AuthorDTO get(Long id);
+    AuthorDTO update(Long id, AuthorDTO dto);
+    void delete(Long id);
 }

@@ -30,4 +30,20 @@ public class PublisherController {
                 uriBuilder.path("/api/publishers/{id}").buildAndExpand(created.id).toUri()
         ).body(created);
     }
+
+    @GetMapping("/{id}")
+    public PublisherDTO get(@PathVariable Long id) {
+        return service.get(id);
+    }
+
+    @PutMapping("/{id}")
+    public PublisherDTO update(@PathVariable Long id, @Valid @RequestBody PublisherDTO dto) {
+        return service.update(id, dto);
+    }
+
+    @DeleteMapping("/{id}")
+    @ResponseStatus(org.springframework.http.HttpStatus.NO_CONTENT)
+    public void delete(@PathVariable Long id) {
+        service.delete(id);
+    }
 }
