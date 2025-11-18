@@ -7,8 +7,10 @@ import com.gamesUP.gamesUP.web.dto.AuthorDTO;
 import com.gamesUP.gamesUP.web.mapper.AuthorMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 @Service
 @Transactional
@@ -33,5 +35,29 @@ public class AuthorServiceImpl implements AuthorService {
     @Transactional(readOnly = true)
     public Page<AuthorDTO> list(Pageable pageable) {
         return repository.findAll(pageable).map(mapper::toDto);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public AuthorDTO get(Long id) {
+        Author a = repository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Author not found"));
+        return mapper.toDto(a);
+    }
+
+    @Override
+    public AuthorDTO update(Long id, AuthorDTO dto) {
+        Author a = repository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Author not found"));
+        a.name = dto.name;
+        return mapper.toDto(repository.save(a));
+    }
+
+    @Override
+    public void delete(Long id) {
+        if (!repository.existsById(id)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Author not found");
+        }
+        repository.deleteById(id);
     }
 }

@@ -7,4 +7,8 @@ import org.springframework.data.domain.Pageable;
 public interface GameService {
     GameDTO create(GameDTO dto);
     Page<GameDTO> search(String q, Pageable pageable);
+    Page<GameDTO> list(Pageable pageable);
+    GameDTO get(Integer id);
+    GameDTO update(Integer id, GameDTO dto);
+    void delete(Integer id);
 }

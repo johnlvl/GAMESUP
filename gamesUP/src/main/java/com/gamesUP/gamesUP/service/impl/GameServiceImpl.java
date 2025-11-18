@@ -13,8 +13,10 @@ import com.gamesUP.gamesUP.web.dto.GameDTO;
 import com.gamesUP.gamesUP.web.mapper.GameMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 @Service
 @Transactional
@@ -63,5 +65,64 @@ public class GameServiceImpl implements GameService {
         String term = q == null ? "" : q;
         return gameRepository.findByNomContainingIgnoreCase(term, pageable)
                 .map(mapper::toDto);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<GameDTO> list(Pageable pageable) {
+        return gameRepository.findAll(pageable).map(mapper::toDto);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public GameDTO get(Integer id) {
+        Game game = gameRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Game not found"));
+        return mapper.toDto(game);
+    }
+
+    @Override
+    public GameDTO update(Integer id, GameDTO dto) {
+        Game existing = gameRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Game not found"));
+
+        // Update scalar fields
+        existing.nom = dto.nom;
+        existing.auteur = dto.auteur;
+        existing.genre = dto.genre;
+        existing.numEdition = dto.numEdition;
+
+        // Update relations by IDs if provided (null clears relation)
+        if (dto.categoryId != null) {
+            Category cat = categoryRepository.findById(dto.categoryId).orElse(null);
+            existing.category = cat;
+        } else {
+            existing.category = null;
+        }
+
+        if (dto.publisherId != null) {
+            Publisher pub = publisherRepository.findById(dto.publisherId).orElse(null);
+            existing.publisher = pub;
+        } else {
+            existing.publisher = null;
+        }
+
+        if (dto.authorId != null) {
+            Author author = authorRepository.findById(dto.authorId).orElse(null);
+            existing.author = author;
+        } else {
+            existing.author = null;
+        }
+
+        Game saved = gameRepository.save(existing);
+        return mapper.toDto(saved);
+    }
+
+    @Override
+    public void delete(Integer id) {
+        if (!gameRepository.existsById(id)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Game not found");
+        }
+        gameRepository.deleteById(id);
     }
 }
