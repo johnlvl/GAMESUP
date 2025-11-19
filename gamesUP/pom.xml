@@ -28,6 +28,7 @@
 	</scm>
 	<properties>
 		<java.version>21</java.version>
+		<!-- JaCoCo disabled by default locally (Java 25 instrumentation issues); enabled in CI profile -->
 		<jacoco.skip>true</jacoco.skip>
 	</properties>
 	<dependencies>
@@ -122,6 +123,11 @@
 								<exclude>java/*</exclude>
 								<exclude>jdk/*</exclude>
 								<exclude>sun/*</exclude>
+								<!-- Exclude trivial boilerplate packages from coverage calculation -->
+								<exclude>com/gamesUP/gamesUP/model/*</exclude>
+								<exclude>com/gamesUP/gamesUP/web/dto/*</exclude>
+								<exclude>com/gamesUP/gamesUP/web/dto/reco/*</exclude>
+								<exclude>com/gamesUP/gamesUP/config/*</exclude>
 							</excludes>
 						</configuration>
 					</execution>
@@ -133,11 +139,55 @@
 						</goals>
 						<configuration>
 							<skip>${jacoco.skip}</skip>
+							<!-- Mirror same excludes so report & ratios align with agent instrumentation -->
+							<excludes>
+								<exclude>com/gamesUP/gamesUP/model/*</exclude>
+								<exclude>com/gamesUP/gamesUP/web/dto/*</exclude>
+								<exclude>com/gamesUP/gamesUP/web/dto/reco/*</exclude>
+								<exclude>com/gamesUP/gamesUP/config/*</exclude>
+							</excludes>
+						</configuration>
+					</execution>
+					<execution>
+						<id>jacoco-check</id>
+						<phase>verify</phase>
+						<goals>
+							<goal>check</goal>
+						</goals>
+						<configuration>
+							<skip>${jacoco.skip}</skip>
+							<excludes>
+								<exclude>com/gamesUP/gamesUP/model/*</exclude>
+								<exclude>com/gamesUP/gamesUP/web/dto/*</exclude>
+								<exclude>com/gamesUP/gamesUP/web/dto/reco/*</exclude>
+								<exclude>com/gamesUP/gamesUP/config/*</exclude>
+							</excludes>
+							<rules>
+								<rule>
+									<element>BUNDLE</element>
+									<limits>
+										<limit>
+											<counter>INSTRUCTION</counter>
+											<value>COVEREDRATIO</value>
+											<minimum>0.70</minimum>
+										</limit>
+									</limits>
+								</rule>
+							</rules>
 						</configuration>
 					</execution>
 				</executions>
 			</plugin>
 		</plugins>
 	</build>
+
+	<profiles>
+		<profile>
+			<id>ci</id>
+			<properties>
+				<jacoco.skip>false</jacoco.skip>
+			</properties>
+		</profile>
+	</profiles>
 
 </project>
