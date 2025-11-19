@@ -45,3 +45,10 @@ class EventsBatchResponse(BaseModel):
 class HealthResponse(BaseModel):
     status: str
     model_loaded: bool
+
+
+class TrainResponse(BaseModel):
+    status: str  # 'ok' or 'skipped'
+    users: int
+    games: int
+    trained: bool
