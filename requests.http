@@ -26,6 +26,10 @@ Accept: application/json
   ]
 }
 
+### FastAPI — Train
+POST http://localhost:8000/train
+Accept: application/json
+
 ### Spring — List games (public)
 GET http://localhost:8080/api/games?page=0&size=5
 Accept: application/json
