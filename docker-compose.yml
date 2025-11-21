@@ -11,7 +11,6 @@ services:
       MYSQL_PASSWORD: gamesup
     ports:
       - "3306:3306"
-    command: ["--default-authentication-plugin=mysql_native_password"]
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
       interval: 10s

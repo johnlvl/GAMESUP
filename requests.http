@@ -1,0 +1,70 @@
+### FastAPI — Health
+GET http://localhost:8000/health
+Accept: application/json
+
+### FastAPI — Recommendations
+POST http://localhost:8000/recommendations
+Content-Type: application/json
+Accept: application/json
+
+{
+  "user_id": 1,
+  "k": 3,
+  "candidates": [101, 102, 103, 104]
+}
+
+### FastAPI — Events batch
+POST http://localhost:8000/events/batch
+Content-Type: application/json
+Accept: application/json
+
+{
+  "events": [
+    { "type": "PURCHASE", "user_id": 1, "game_id": 101, "ts": "2025-11-18T12:00:00Z" },
+    { "type": "VIEW",     "user_id": 1, "game_id": 102, "ts": "2025-11-18T12:05:00Z" },
+    { "type": "RATING",   "user_id": 1, "game_id": 103, "value": 4.5, "ts": "2025-11-18T12:10:00Z" }
+  ]
+}
+
+### FastAPI — Train
+POST http://localhost:8000/train
+Accept: application/json
+
+### Spring — List games (public)
+GET http://localhost:8080/api/games?page=0&size=5
+Accept: application/json
+
+### Spring — Search games (public)
+GET http://localhost:8080/api/games/search?q=catan&page=0&size=10
+Accept: application/json
+
+### Spring — Create game (ADMIN)
+POST http://localhost:8080/api/games
+Authorization: Basic YWRtaW46YWRtaW4=
+Content-Type: application/json
+Accept: application/json
+
+{
+  "nom": "Catan",
+  "genre": "Strategy",
+  "numEdition": 1,
+  "price": 29.99
+}
+
+### Spring — Update game (ADMIN)
+PUT http://localhost:8080/api/games/2
+Authorization: Basic YWRtaW46YWRtaW4=
+Content-Type: application/json
+Accept: application/json
+
+{
+  "nom": "Catan",
+  "genre": "Strategy",
+  "numEdition": 1,
+  "price": 31.99
+}
+
+### Spring — Delete game (ADMIN)
+DELETE http://localhost:8080/api/games/2
+Authorization: Basic YWRtaW46YWRtaW4=
+Accept: */*
